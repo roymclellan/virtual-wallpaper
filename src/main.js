@@ -5,8 +5,8 @@ const path = require('path');
 const url = require('url');
 const fs = require('fs');
 
-process.env.NODE_ENV = 'develop'
-// process.env.NODE_ENV = 'production'
+// process.env.NODE_ENV = 'develop'
+process.env.NODE_ENV = 'production'
 
 
 autoUpdater.logger = log;
