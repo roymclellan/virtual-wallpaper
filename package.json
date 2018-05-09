@@ -1,6 +1,6 @@
 {
   "name": "virtual-wallpaper",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "A Virtual Wallpaper to replace the boring desktop wallpapers set by the admin team at Epiq.",
   "main": "src/main.js",
   "scripts": {

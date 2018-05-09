@@ -5,7 +5,12 @@ ipcRenderer.on('showPath', (e, args) => {
     console.log(args);
     document.getElementById('pathLabel').innerHTML = args;
     document.getElementById('submitButton').disabled = false;
-})
+});
+
+ipcRenderer.on('setVersion', (e, version) => {
+    console.log('Version: ' + version);
+    document.getElementById('versionLabel').innerText = 'Version: ' + version;
+});
 
 document.getElementById('folderPickerButton').onclick = () => {
     console.log("clicky");
@@ -30,3 +35,5 @@ document.getElementById('submitButton').onclick = () => {
 if(document.getElementById('pathLabel').innerHTML == ''){
     document.getElementById('submitButton').disabled = true;
 }
+
+ipcRenderer.send('GetVersion');

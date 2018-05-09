@@ -1,12 +1,12 @@
-const { app, BrowserWindow, Menu, protocol, ipcMain,dialog, Tray  } = require('electron');
+const { app, BrowserWindow, Menu, protocol, ipcMain, dialog, Tray } = require('electron');
 const log = require('electron-log');
 const { autoUpdater } = require("electron-updater");
 const path = require('path');
 const url = require('url');
 const fs = require('fs');
 
-// process.env.NODE_ENV = 'develop'
-process.env.NODE_ENV = 'production'
+process.env.NODE_ENV = 'develop'
+// process.env.NODE_ENV = 'production'
 
 
 autoUpdater.logger = log;
@@ -67,7 +67,7 @@ app.on('ready', function () {
         tray = new Tray('icon.ico');
         Menu.setApplicationMenu(mainMenu);
     } else {
-        tray = new Tray(path.join(__dirname,'icon.ico'));
+        tray = new Tray(path.join(__dirname, 'icon.ico'));
         Menu.setApplicationMenu(null);
     }
 
@@ -77,6 +77,11 @@ app.on('ready', function () {
         event.preventDefault();
         mainWindow.hide();
     });
+});
+
+ipcMain.on('GetVersion', (e, args) => {
+    let version = app.getVersion();
+    e.sender.send('setVersion', version);
 });
 
 ipcMain.on('showWindows', function (e, payload) {
@@ -133,6 +138,7 @@ autoUpdater.on('checking-for-update', () => {
 })
 
 autoUpdater.on('update-available', (info) => {
+    alert('New Update Available.')
     sendStatusToWindow('Update available.');
 })
 
@@ -152,6 +158,7 @@ autoUpdater.on('download-progress', (progressObj) => {
 })
 
 autoUpdater.on('update-downloaded', (info) => {
+    alert('Restart the program to apply updates.');
     sendStatusToWindow('Update downloaded');
 });
 
@@ -213,7 +220,7 @@ const contextMenu = Menu.buildFromTemplate([
     },
     {
         label: 'Quit',
-        click(){
+        click() {
             app.quit();
         }
     }
