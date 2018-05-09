@@ -5,8 +5,8 @@ const path = require('path');
 const url = require('url');
 const fs = require('fs');
 
-process.env.NODE_ENV = 'develop'
-// process.env.NODE_ENV = 'production'
+// process.env.NODE_ENV = 'develop'
+process.env.NODE_ENV = 'production'
 
 
 autoUpdater.logger = log;
@@ -64,7 +64,7 @@ app.on('ready', function () {
 
     if (process.env.NODE_ENV === 'develop') {
         const mainMenu = Menu.buildFromTemplate(mainMenuTemplate);
-        tray = new Tray('./src/icon.ico');
+        tray = new Tray('icon.ico');
         Menu.setApplicationMenu(mainMenu);
     } else {
         tray = new Tray(path.join(__dirname,'icon.ico'));
