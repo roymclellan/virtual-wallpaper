@@ -1,0 +1,29 @@
+{
+  "name": "virtual-wallpaper",
+  "version": "0.1.0",
+  "description": "A Virtual Wallpaper to replace the boring desktop wallpapers set by the admin team at Epiq.",
+  "main": "src/main.js",
+  "scripts": {
+    "start": "electron .",
+    "publish": "build -p always"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/roymclellan/virtual-wallpaper.git"
+  },
+  "author": "Roy McLellan",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/roymclellan/virtual-wallpaper/issues"
+  },
+  "homepage": "https://github.com/roymclellan/virtual-wallpaper#readme",
+  "devDependencies": {
+    "electron": "^2.0.0",
+    "electron-builder": "^20.13.2"
+  },
+  "dependencies": {
+    "electron-log": "^2.2.14",
+    "electron-updater": "^2.21.10",
+    "jquery": "^3.3.1"
+  }
+}

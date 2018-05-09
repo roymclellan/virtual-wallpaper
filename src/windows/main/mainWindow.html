@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0-beta/css/materialize.min.css">
+
+    <title>Virtual Wallpaper</title>
+    <style>
+        .dropdown-label{
+            color:#222;
+        }
+    </style>
+</head>
+
+<body style="background-color: #eeeeee">
+    <form class="container">
+        <div class="input-field">
+            <p>
+                <strong>Folder Path: </strong>
+                <label for="folderPickerButton" id="pathLabel"></label>
+            </p>
+            <button class="btn waves-effect" id='folderPickerButton'>Choose a folder</button>
+        </div>
+        <label class="dropdown-label">How many wallpapers?</label>
+        <select name="windows" id="windowsSelect" class='browser-default'>
+            <option value="1">One</option>
+            <option value="2">Two</option>
+            <option value="3" selected>Three</option>
+            <option value="4">Four</option>
+        </select>
+        <label class="dropdown-label">How many seconds?</label>
+        <select name="number" id="timeSelect" class='browser-default'>
+            <option value="5000">5 seconds</option>
+            <option value="60000">1 minute</option>
+            <option value="300000" selected>5 minutes</option>
+            <option value="600000">10 minutes</option>
+            <option value="1800000">30 minutes</option>
+        </select>
+        <div class="input-field">
+            <button id="submitButton" class="btn  waves-effect">Show Wallpapers</button>
+        </div>
+    </form>
+</body>
+<script src="./mainWindow.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0-beta/js/materialize.min.js"></script>
+
+<script>
+    var elem = document.querySelector('select');
+    var instance = M.FormSelect.init(elem);
+</script>
+
+</html>
