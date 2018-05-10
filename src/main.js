@@ -138,7 +138,6 @@ autoUpdater.on('checking-for-update', () => {
 })
 
 autoUpdater.on('update-available', (info) => {
-    alert('New Update Available.')
     sendStatusToWindow('Update available.');
 })
 
@@ -158,8 +157,8 @@ autoUpdater.on('download-progress', (progressObj) => {
 })
 
 autoUpdater.on('update-downloaded', (info) => {
-    alert('Restart the program to apply updates.');
     sendStatusToWindow('Update downloaded');
+    sendStatusToWindow('Restart the Program to apply updates.')
 });
 
 const getImages = (filePath) => {
