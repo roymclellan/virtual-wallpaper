@@ -19,7 +19,7 @@ let images = [];
 let timer = 0;
 let tray = null;
 let trayIcon = null;
-let mainWindow = null;
+let mainWindow;
 
 
 //-------------------------------------------------------------------
@@ -38,12 +38,11 @@ let mainWindow = null;
 // for the app to show a window than to have to click "About" to see
 // that updates are working.
 //-------------------------------------------------------------------
-let win;
-
-function sendStatusToWindow(text) {
+const sendStatusToWindow = (text) => {
     log.info(text);
-    win.webContents.send('message', text);
-}
+    console.log(text);
+    mainWindow.webContents.send('message', text);
+};
 
 app.on('ready', function () {
     mainWindow = new BrowserWindow({
@@ -64,7 +63,7 @@ app.on('ready', function () {
 
     if (process.env.NODE_ENV === 'develop') {
         const mainMenu = Menu.buildFromTemplate(mainMenuTemplate);
-        tray = new Tray('icon.ico');
+        tray = new Tray('./build/icon.ico');
         Menu.setApplicationMenu(mainMenu);
     } else {
         tray = new Tray(path.join(__dirname, 'icon.ico'));
@@ -134,6 +133,7 @@ ipcMain.on('getWallpaperWindowimage', (e, args) => {
 })
 
 autoUpdater.on('checking-for-update', () => {
+    
     sendStatusToWindow('Checking for update...');
 })
 
@@ -263,7 +263,9 @@ if (process.env.NODE_ENV !== 'production') {
 // app quits.
 //-------------------------------------------------------------------
 app.on('ready', function () {
+    sendStatusToWindow('checking for updates...');
     autoUpdater.checkForUpdatesAndNotify();
+
 });
 
 //-------------------------------------------------------------------

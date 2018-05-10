@@ -7,6 +7,15 @@ ipcRenderer.on('showPath', (e, args) => {
     document.getElementById('submitButton').disabled = false;
 });
 
+ipcRenderer.on('message', (event, text)  => {
+    console.log('Message Recieved: ' + message);
+    var container = document.getElementById('messages');
+    var message = document.createElement('div');
+    message.innerHTML = text;
+    container.appendChild(message);
+});
+
+
 ipcRenderer.on('setVersion', (e, version) => {
     console.log('Version: ' + version);
     document.getElementById('versionLabel').innerText = 'Version: ' + version;
