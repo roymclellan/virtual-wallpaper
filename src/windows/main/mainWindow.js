@@ -1,8 +1,15 @@
 const electron = require('electron');
+const Store = require('electron-store');
 const { ipcRenderer, app, dialog, remote } = electron;
 
+let store = new Store();
+let imageFolderUrl;
+let time;
+let count;
+
+loadUserPreferences();
+
 ipcRenderer.on('showPath', (e, args) => {
-    console.log(args);
     document.getElementById('pathLabel').innerHTML = args;
     document.getElementById('submitButton').disabled = false;
 });
@@ -22,7 +29,6 @@ ipcRenderer.on('setVersion', (e, version) => {
 });
 
 document.getElementById('folderPickerButton').onclick = () => {
-    console.log("clicky");
     ipcRenderer.send('getPath');
 }
 
@@ -32,10 +38,13 @@ document.getElementById('submitButton').onclick = () => {
 
     let timeSelect = document.getElementById('timeSelect');
     let time = timeSelect.options[timeSelect.selectedIndex].value;
-
+    
+    let savePreferences = document.getElementById('savePreferences').checked;
+    
     let payload = {
         count,
-        time
+        time,
+        savePreferences
     }
     
     ipcRenderer.send('showWindows', payload);
@@ -46,3 +55,21 @@ if(document.getElementById('pathLabel').innerHTML == ''){
 }
 
 ipcRenderer.send('GetVersion');
+
+function loadUserPreferences() {
+    imageFolderUrl = store.get('imageFolderUrl');
+    time = store.get('time');
+    count = store.get('count');
+    console.log(imageFolderUrl, time, count);
+
+    if(imageFolderUrl){
+        document.getElementById('pathLabel').innerText = imageFolderUrl;
+        ipcRenderer.send('pushPath');
+    }
+    if(time){
+        document.getElementById('timeSelect').value = time;   
+    }
+    if(count){
+        document.getElementById('windowsSelect').value = count;
+    }
+};

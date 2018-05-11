@@ -9,8 +9,8 @@
 
     <title>Virtual Wallpaper</title>
     <style>
-        .dropdown-label{
-            color:#222;
+        .dropdown-label {
+            color: #222;
         }
     </style>
 </head>
@@ -39,8 +39,16 @@
             <option value="600000">10 minutes</option>
             <option value="1800000">30 minutes</option>
         </select>
-        <div class="input-field">
-            <button id="submitButton" class="btn  waves-effect">Show Wallpapers</button>
+        <div class="input-field row">
+            <div class=" col s6 m4 l3 xl2">
+                <label for="savePreferences">
+                    <input id="savePreferences" name="savePreferences" type="checkbox" />
+                    <span>Save Preferences</span>
+                </label>
+            </div>
+            <div class="col s6 m8 l9 xl10">
+                <button id="submitButton" class="btn  waves-effect">Show Wallpapers</button>
+            </div>
         </div>
         <span id="versionLabel"></span>
         <div id="messages"></div>

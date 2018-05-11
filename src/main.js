@@ -4,23 +4,24 @@ const { autoUpdater } = require("electron-updater");
 const path = require('path');
 const url = require('url');
 const fs = require('fs');
+const Store = require('electron-store');
 
-// process.env.NODE_ENV = 'develop'
-process.env.NODE_ENV = 'production'
+process.env.NODE_ENV = 'develop'
+// process.env.NODE_ENV = 'production'
 
+let store = new Store();
 
 autoUpdater.logger = log;
 autoUpdater.logger.transports.file.level = 'info';
 log.info('App starting...');
 
 let windows = [];
-let wallpaperPath = '';
+let wallpaperPath = store.get('imageFolderUrl') || '';
 let images = [];
 let timer = 0;
 let tray = null;
 let trayIcon = null;
 let mainWindow;
-
 
 //-------------------------------------------------------------------
 // Define the menu
@@ -84,8 +85,15 @@ ipcMain.on('GetVersion', (e, args) => {
 });
 
 ipcMain.on('showWindows', function (e, payload) {
+    console.log(wallpaperPath);
     windows = [];
     timer = payload.time;
+
+    if(payload.savePreferences){
+        store.set('imageFolderUrl', wallpaperPath);
+        store.set('time', payload.time);
+        store.set('count', payload.count);
+    }
 
     let x;
     for (x = 0; x < payload.count; x++) {
@@ -97,6 +105,26 @@ ipcMain.on('showWindows', function (e, payload) {
     }
 
     mainWindow.hide();
+});
+
+ipcMain.on('pushPath', (e, args) => {
+    // TODO: This needs to be combined with the 'getPath' function below in a more elegant manner.
+    getImages(wallpaperPath)
+    .then(function (data) {
+        console.log('Images Received')
+        data.forEach(fileName => {
+            if (fileName.split('.').pop() === 'jpg') {
+                let image = `${wallpaperPath}\\${fileName}`
+                images.push(image);
+            }
+        })
+    })
+    .then(function () {
+        e.sender.send('showPath', wallpaperPath);
+    })
+    .catch(function (err) {
+        console.log(err);
+    });
 });
 
 ipcMain.on('getPath', (e, args) => {
@@ -133,7 +161,7 @@ ipcMain.on('getWallpaperWindowimage', (e, args) => {
 })
 
 autoUpdater.on('checking-for-update', () => {
-    
+
     sendStatusToWindow('Checking for update...');
 })
 
