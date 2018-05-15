@@ -3,18 +3,15 @@ const Store = require('electron-store');
 const { ipcRenderer, app, dialog, remote } = electron;
 
 let store = new Store();
-let imageFolderUrl;
-let time;
-let count;
 
 loadUserPreferences();
 
 ipcRenderer.on('showPath', (e, args) => {
     document.getElementById('pathLabel').innerHTML = args;
-    document.getElementById('submitButton').disabled = false;
+    canEnableSubmit()
 });
 
-ipcRenderer.on('message', (event, text)  => {
+ipcRenderer.on('message', (event, text) => {
     console.log('Message Recieved: ' + message);
     var container = document.getElementById('messages');
     var message = document.createElement('div');
@@ -38,38 +35,63 @@ document.getElementById('submitButton').onclick = () => {
 
     let timeSelect = document.getElementById('timeSelect');
     let time = timeSelect.options[timeSelect.selectedIndex].value;
-    
+
     let savePreferences = document.getElementById('savePreferences').checked;
-    
+
     let payload = {
         count,
         time,
         savePreferences
     }
-    
+
     ipcRenderer.send('showWindows', payload);
 };
 
-if(document.getElementById('pathLabel').innerHTML == ''){
+document.getElementById('windowsSelect').onchange = (e) => {
+    canEnableSubmit();
+}
+document.getElementById('timeSelect').onchange = (e) => {
+    canEnableSubmit();
+}
+
+if (document.getElementById('pathLabel').innerHTML == '') {
     document.getElementById('submitButton').disabled = true;
 }
 
 ipcRenderer.send('GetVersion');
 
 function loadUserPreferences() {
-    imageFolderUrl = store.get('imageFolderUrl');
-    time = store.get('time');
-    count = store.get('count');
-    console.log(imageFolderUrl, time, count);
+    let savedCheckbox = document.getElementById('savePreferences')
+    if (Object.keys(store.store).length > 0) {
+        savedCheckbox.checked = true;
+    } else {
+        savedCheckbox.checked = false;
+    }
 
-    if(imageFolderUrl){
-        document.getElementById('pathLabel').innerText = imageFolderUrl;
+    if (store.has('imageFolderUrl')) {
+        document.getElementById('pathLabel').innerText = store.get('imageFolderUrl');
         ipcRenderer.send('pushPath');
     }
-    if(time){
-        document.getElementById('timeSelect').value = time;   
+    if (store.has('time')) {
+        document.getElementById('timeSelect').value = store.get('time');
     }
-    if(count){
-        document.getElementById('windowsSelect').value = count;
+    if (store.has('count')) {
+        document.getElementById('windowsSelect').value = store.get('count');
     }
 };
+
+function canEnableSubmit() {
+    let windowsSelect = document.getElementById('windowsSelect');
+    let timeSelect = document.getElementById('timeSelect');
+    let pathLabel = document.getElementById('pathLabel');
+    debugger;
+    if (windowsSelect.value > 0 &&
+        timeSelect.value > 0 &&
+        pathLabel.innerHTML.length > 0) {
+        debugger;
+        document.getElementById('submitButton').disabled = false;
+    } else {
+        debugger;
+        document.getElementById('submitButton').disabled = true;
+    }
+}
