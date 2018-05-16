@@ -89,7 +89,7 @@ ipcMain.on('showWindows', function (e, payload) {
     windows = [];
     timer = payload.time;
 
-    if(payload.savePreferences){
+    if (payload.savePreferences) {
         store.set('imageFolderUrl', wallpaperPath);
         store.set('time', payload.time);
         store.set('count', payload.count);
@@ -110,43 +110,47 @@ ipcMain.on('showWindows', function (e, payload) {
 ipcMain.on('pushPath', (e, args) => {
     // TODO: This needs to be combined with the 'getPath' function below in a more elegant manner.
     getImages(wallpaperPath)
-    .then(function (data) {
-        console.log('Images Received')
-        data.forEach(fileName => {
-            if (fileName.split('.').pop() === 'jpg') {
-                let image = `${wallpaperPath}\\${fileName}`
-                images.push(image);
-            }
+        .then(function (data) {
+            console.log('Images Received')
+            data.forEach(fileName => {
+                if (fileName.split('.').pop() === 'jpg') {
+                    let image = `${wallpaperPath}\\${fileName}`
+                    images.push(image);
+                }
+            })
         })
-    })
-    .then(function () {
-        e.sender.send('showPath', wallpaperPath);
-    })
-    .catch(function (err) {
-        console.log(err);
-    });
+        .then(function () {
+            e.sender.send('showPath', wallpaperPath);
+        })
+        .catch(function (err) {
+            console.log(err);
+        });
 });
 
 ipcMain.on('getPath', (e, args) => {
     dialog.showOpenDialog(mainWindow, { properties: ['openDirectory'] }, (filePaths) => {
         console.log('Received Request.')
-        wallpaperPath = filePaths[0];
-        getImages(wallpaperPath)
-            .then(function (data) {
-                console.log('Images Received')
-                data.forEach(fileName => {
-                    if (fileName.split('.').pop() === 'jpg') {
-                        let image = `${wallpaperPath}\\${fileName}`
-                        images.push(image);
-                    }
+        if (filePaths) {
+            wallpaperPath = filePaths[0];
+            getImages(wallpaperPath)
+                .then(function (data) {
+                    console.log('Images Received')
+                    data.forEach(fileName => {
+                        if (fileName.split('.').pop() === 'jpg') {
+                            let image = `${wallpaperPath}\\${fileName}`
+                            images.push(image);
+                        }
+                    })
                 })
-            })
-            .then(function () {
-                e.sender.send('showPath', wallpaperPath);
-            })
-            .catch(function (err) {
-                console.log(err);
-            });
+                .then(function () {
+                    e.sender.send('showPath', wallpaperPath);
+                })
+                .catch(function (err) {
+                    console.log(err);
+                });
+        }else{
+            e.sender.send('showPath', "");
+        }
     });
 });
 
