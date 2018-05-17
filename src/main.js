@@ -68,16 +68,6 @@ app.on('ready', function () {
         tray = new Tray(path.join(__dirname, 'icon.ico'));
     }
 
-    if(wallpaperPath){
-        images = fileManager.GetImagesFromPath(wallpaperPath);
-        contextMenuTemplate.unshift({
-            label: 'Quick Wallpaper',
-            click() {
-                createWindow();
-            }
-        });
-    }    
-
     const mainMenu = Menu.buildFromTemplate(mainMenuTemplate);
     const contextMenu = Menu.buildFromTemplate(contextMenuTemplate);
 
