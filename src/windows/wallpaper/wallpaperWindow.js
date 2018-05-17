@@ -19,11 +19,9 @@ const loadImage = (payload) => {
     let filePath = formatURL(payload.path);
     let backgroundDiv = document.getElementById('background');
 
-    $('#background').fadeOut(500,function(){
+    $('#background').fadeOut(500, function () {
         $(this).attr('src', filePath).fadeIn(500);
     });
-
-    //document.body.style.backgroundImage = filePath;
 };
 
 const getImage = () => {
@@ -33,7 +31,7 @@ const getImage = () => {
 const formatURL = (path) => {
     let escapedPath = path.split("\\").join("\\\\");
     let fileURL = 'file:///' + escapedPath;
-    // let fileURL = 'url(\'file:///' + escapedPath + '\')';
+
     return fileURL;
 }
 
