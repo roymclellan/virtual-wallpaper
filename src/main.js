@@ -16,7 +16,6 @@ autoUpdater.logger = log;
 autoUpdater.logger.transports.file.level = 'info';
 log.info('App starting...');
 
-let windows = [];
 let wallpaperPath = store.get('imageFolderUrl') || '';
 let images = [];
 let timer = 0;
@@ -69,9 +68,23 @@ app.on('ready', function () {
         tray = new Tray(path.join(__dirname, 'icon.ico'));
     }
 
+    if(wallpaperPath){
+        images = fileManager.GetImagesFromPath(wallpaperPath);
+        contextMenuTemplate.unshift({
+            label: 'Quick Wallpaper',
+            click() {
+                createWindow();
+            }
+        });
+    }    
+
     const mainMenu = Menu.buildFromTemplate(mainMenuTemplate);
+    const contextMenu = Menu.buildFromTemplate(contextMenuTemplate);
+
+    
     Menu.setApplicationMenu(mainMenu);
     tray.setContextMenu(contextMenu);
+
 
     mainWindow.on('minimize', function (event) {
         event.preventDefault();
@@ -84,7 +97,6 @@ ipcMain.on('GetVersion', (e, args) => {
 });
 
 ipcMain.on('showWindows', function (e, payload) {
-    windows = [];
     timer = payload.time;
 
     if (payload.savePreferences) {
@@ -95,13 +107,8 @@ ipcMain.on('showWindows', function (e, payload) {
 
     images = fileManager.GetImagesFromPath(wallpaperPath)
 
-    let x;
     for (x = 0; x < payload.count; x++) {
-        windows.push(x);
-    }
-
-    for (var i in windows) {
-        windows[i] = createWindow();
+        createWindow();
     }
 
     mainWindow.hide();
@@ -208,7 +215,7 @@ const mainMenuTemplate = [
     }
 ]
 
-const contextMenu = Menu.buildFromTemplate([
+const contextMenuTemplate = [
     {
         label: 'Show App',
         click() {
@@ -221,7 +228,7 @@ const contextMenu = Menu.buildFromTemplate([
             app.quit();
         }
     }
-]);
+];
 
 //if on a mac, add empty object to menu.
 if (process.platform == 'darwin') {
@@ -248,6 +255,7 @@ if (process.env.NODE_ENV !== 'production') {
         ]
     });
 };
+
 
 //
 // CHOOSE one of the following options for Auto updates
