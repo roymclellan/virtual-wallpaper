@@ -5,11 +5,13 @@ const path = require('path');
 const url = require('url');
 const fs = require('fs');
 const Store = require('electron-store');
+const FileManager = require('./services/fileManager');
 
 process.env.NODE_ENV = 'develop'
 // process.env.NODE_ENV = 'production'
 
 let store = new Store();
+let fileManager = new FileManager();
 
 autoUpdater.logger = log;
 autoUpdater.logger.transports.file.level = 'info';
@@ -46,6 +48,8 @@ const sendStatusToWindow = (text) => {
 };
 
 app.on('ready', function () {
+    console.log(fileManager.notifyMe());
+
     mainWindow = new BrowserWindow({
         height: 400,
         width: 400
@@ -80,8 +84,7 @@ app.on('ready', function () {
 });
 
 ipcMain.on('GetVersion', (e, args) => {
-    let version = app.getVersion();
-    e.sender.send('setVersion', version);
+    e.sender.send('setVersion', app.getVersion());
 });
 
 ipcMain.on('showWindows', function (e, payload) {
