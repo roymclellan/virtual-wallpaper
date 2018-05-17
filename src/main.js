@@ -1,4 +1,4 @@
-const { app, BrowserWindow, Menu, protocol, ipcMain, dialog, Tray } = require('electron');
+const { app, BrowserWindow, Menu, protocol, ipcMain, dialog, Tray, shell } = require('electron');
 const log = require('electron-log');
 const { autoUpdater } = require("electron-updater");
 const path = require('path');
@@ -6,8 +6,8 @@ const url = require('url');
 const fs = require('fs');
 const Store = require('electron-store');
 
-process.env.NODE_ENV = 'develop'
-// process.env.NODE_ENV = 'production'
+// process.env.NODE_ENV = 'develop'
+process.env.NODE_ENV = 'production'
 
 let store = new Store();
 
@@ -63,14 +63,13 @@ app.on('ready', function () {
     });
 
     if (process.env.NODE_ENV === 'develop') {
-        const mainMenu = Menu.buildFromTemplate(mainMenuTemplate);
         tray = new Tray('./build/icon.ico');
-        Menu.setApplicationMenu(mainMenu);
     } else {
         tray = new Tray(path.join(__dirname, 'icon.ico'));
-        Menu.setApplicationMenu(null);
     }
-
+    
+    const mainMenu = Menu.buildFromTemplate(mainMenuTemplate);
+    Menu.setApplicationMenu(mainMenu);
     tray.setContextMenu(contextMenu);
 
     mainWindow.on('minimize', function (event) {
@@ -236,6 +235,20 @@ const mainMenuTemplate = [
                     : 'Ctrl+Q',
                 click() {
                     app.quit();
+                }
+            }
+        ]
+    },
+    {
+        label: 'About',
+        submenu: [
+            {
+                label: `Version ${app.getVersion()}`
+            },
+            {
+                label: 'Product Documentation',
+                click(){
+                    shell.openExternal('https://github.com/roymclellan/virtual-wallpaper/blob/master/README.md')
                 }
             }
         ]
