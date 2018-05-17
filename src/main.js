@@ -6,8 +6,8 @@ const url = require('url');
 const Store = require('electron-store');
 const FileManager = require('./services/fileManager');
 
-process.env.NODE_ENV = 'develop'
-// process.env.NODE_ENV = 'production'
+// process.env.NODE_ENV = 'develop'
+process.env.NODE_ENV = 'production'
 
 let store = new Store();
 let fileManager = new FileManager();
@@ -22,7 +22,7 @@ let timer = 0;
 let tray = null;
 let trayIcon = null;
 let mainWindow;
-
+let updateWindow;
 //-------------------------------------------------------------------
 // Define the menu
 //
@@ -42,7 +42,7 @@ let mainWindow;
 const sendStatusToWindow = (text) => {
     log.info(text);
     console.log(text);
-    mainWindow.webContents.send('message', text);
+    updateWindow.webContents.send('message', text);
 };
 
 app.on('ready', function () {
@@ -53,6 +53,18 @@ app.on('ready', function () {
 
     mainWindow.loadURL(url.format({
         pathname: path.join(__dirname, './windows/main/mainWindow.html'),
+        protocol: 'file',
+        slashes: true
+    }));
+
+    updateWindow = new BrowserWindow({
+        height:200,
+        width: 400,
+        autoHideMenuBar: true 
+    });
+
+    updateWindow.loadURL(url.format({
+        pathname: path.join(__dirname, './windows/update/updateWindow.html'),
         protocol: 'file',
         slashes: true
     }));
@@ -70,7 +82,6 @@ app.on('ready', function () {
 
     const mainMenu = Menu.buildFromTemplate(mainMenuTemplate);
     const contextMenu = Menu.buildFromTemplate(contextMenuTemplate);
-
     
     Menu.setApplicationMenu(mainMenu);
     tray.setContextMenu(contextMenu);
@@ -128,7 +139,6 @@ ipcMain.on('getWallpaperWindowimage', (e, args) => {
 })
 
 autoUpdater.on('checking-for-update', () => {
-
     sendStatusToWindow('Checking for update...');
 })
 
@@ -155,7 +165,6 @@ autoUpdater.on('update-downloaded', (info) => {
     sendStatusToWindow('Update downloaded');
     sendStatusToWindow('Restart the Program to apply updates.')
 });
-
 
 const createWindow = () => {
     console.log('Creating New Window...');
