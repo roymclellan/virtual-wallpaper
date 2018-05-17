@@ -3,12 +3,11 @@ const log = require('electron-log');
 const { autoUpdater } = require("electron-updater");
 const path = require('path');
 const url = require('url');
-const fs = require('fs');
 const Store = require('electron-store');
 const FileManager = require('./services/fileManager');
 
-// process.env.NODE_ENV = 'develop'
-process.env.NODE_ENV = 'production'
+process.env.NODE_ENV = 'develop'
+// process.env.NODE_ENV = 'production'
 
 let store = new Store();
 let fileManager = new FileManager();
@@ -48,8 +47,6 @@ const sendStatusToWindow = (text) => {
 };
 
 app.on('ready', function () {
-    console.log(fileManager.notifyMe());
-
     mainWindow = new BrowserWindow({
         height: 400,
         width: 400
@@ -71,7 +68,7 @@ app.on('ready', function () {
     } else {
         tray = new Tray(path.join(__dirname, 'icon.ico'));
     }
-    
+
     const mainMenu = Menu.buildFromTemplate(mainMenuTemplate);
     Menu.setApplicationMenu(mainMenu);
     tray.setContextMenu(contextMenu);
@@ -87,7 +84,6 @@ ipcMain.on('GetVersion', (e, args) => {
 });
 
 ipcMain.on('showWindows', function (e, payload) {
-    console.log(wallpaperPath);
     windows = [];
     timer = payload.time;
 
@@ -96,6 +92,8 @@ ipcMain.on('showWindows', function (e, payload) {
         store.set('time', payload.time);
         store.set('count', payload.count);
     }
+
+    images = fileManager.GetImagesFromPath(wallpaperPath)
 
     let x;
     for (x = 0; x < payload.count; x++) {
@@ -109,51 +107,17 @@ ipcMain.on('showWindows', function (e, payload) {
     mainWindow.hide();
 });
 
-ipcMain.on('pushPath', (e, args) => {
-    // TODO: This needs to be combined with the 'getPath' function below in a more elegant manner.
-    getImages(wallpaperPath)
-        .then(function (data) {
-            console.log('Images Received')
-            data.forEach(fileName => {
-                if (fileName.split('.').pop() === 'jpg') {
-                    let image = `${wallpaperPath}\\${fileName}`
-                    images.push(image);
-                }
-            })
-        })
-        .then(function () {
-            e.sender.send('showPath', wallpaperPath);
-        })
-        .catch(function (err) {
-            console.log(err);
-        });
-});
-
-ipcMain.on('getPath', (e, args) => {
+ipcMain.on('SetWallpaperPath', (e, args) => {
     dialog.showOpenDialog(mainWindow, { properties: ['openDirectory'] }, (filePaths) => {
-        console.log('Received Request.')
         if (filePaths) {
             wallpaperPath = filePaths[0];
-            getImages(wallpaperPath)
-                .then(function (data) {
-                    console.log('Images Received')
-                    data.forEach(fileName => {
-                        if (fileName.split('.').pop() === 'jpg') {
-                            let image = `${wallpaperPath}\\${fileName}`
-                            images.push(image);
-                        }
-                    })
-                })
-                .then(function () {
-                    e.sender.send('showPath', wallpaperPath);
-                })
-                .catch(function (err) {
-                    console.log(err);
-                });
-        }else{
-            e.sender.send('showPath', "");
+        } else {
+            wallpaperPath = null;
         }
+
+        e.sender.send('showPath', wallpaperPath);
     });
+
 });
 
 ipcMain.on('getWallpaperWindowimage', (e, args) => {
@@ -195,20 +159,6 @@ autoUpdater.on('update-downloaded', (info) => {
     sendStatusToWindow('Restart the Program to apply updates.')
 });
 
-const getImages = (filePath) => {
-    console.log('Getting Images...');
-    let promise = new Promise(function (resolve, reject) {
-        fs.readdir(filePath, (err, files) => {
-            if (err) {
-                reject(err);
-            } else {
-                resolve(files);
-            }
-        });
-    });
-
-    return promise;
-};
 
 const createWindow = () => {
     console.log('Creating New Window...');
@@ -250,7 +200,7 @@ const mainMenuTemplate = [
             },
             {
                 label: 'Product Documentation',
-                click(){
+                click() {
                     shell.openExternal('https://github.com/roymclellan/virtual-wallpaper/blob/master/README.md')
                 }
             }

@@ -1,11 +1,21 @@
 'use strict'
 
-class FileManager{
+const fs = require('fs');
 
-    notifyMe() {
-        return ('You called the file manager!');
-    };
+class FileManager {
+    GetImagesFromPath(wallpaperPath) {
+        let images = [];
 
-}
+        let fileNameArray = fs.readdirSync(wallpaperPath);
+        fileNameArray.forEach(fileName => {
+            if (fileName.split('.').pop() === 'jpg') {
+                let image = `${wallpaperPath}\\${fileName}`
+                images.push(image);
+            }
+        });
+
+        return images;
+    }
+};
 
 module.exports = FileManager;

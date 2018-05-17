@@ -26,7 +26,7 @@ ipcRenderer.on('setVersion', (e, version) => {
 });
 
 document.getElementById('folderPickerButton').onclick = () => {
-    ipcRenderer.send('getPath');
+    ipcRenderer.send('SetWallpaperPath');
 }
 
 document.getElementById('submitButton').onclick = () => {
@@ -70,7 +70,6 @@ function loadUserPreferences() {
 
     if (store.has('imageFolderUrl')) {
         document.getElementById('pathLabel').innerText = store.get('imageFolderUrl');
-        ipcRenderer.send('pushPath');
     }
     if (store.has('time')) {
         document.getElementById('timeSelect').value = store.get('time');
