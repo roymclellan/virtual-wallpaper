@@ -1,4 +1,4 @@
-const { app, BrowserWindow, Menu, protocol, ipcMain, dialog, Tray, shell } = require('electron');
+const { app, BrowserWindow, Menu, protocol, ipcMain, dialog, Tray, shell, Notification } = require('electron');
 const log = require('electron-log');
 const { autoUpdater } = require("electron-updater");
 const path = require('path');
@@ -23,29 +23,56 @@ let tray = null;
 let trayIcon = null;
 let mainWindow;
 let updateWindow;
-//-------------------------------------------------------------------
-// Define the menu
-//
-// THIS SECTION IS NOT REQUIRED
-//-------------------------------------------------------------------
 
-
-//-------------------------------------------------------------------
-// Open a window that displays the version
-//
-// THIS SECTION IS NOT REQUIRED
-//
-// This isn't required for auto-updates to work, but it's easier
-// for the app to show a window than to have to click "About" to see
-// that updates are working.
-//-------------------------------------------------------------------
 const sendStatusToWindow = (text) => {
     log.info(text);
     console.log(text);
     updateWindow.webContents.send('message', text);
 };
 
+const sendNotification = (title, text) => {
+    let notification = new Notification({
+        title: title,
+        body: text,
+    });
+
+    notification.show();
+};
+
+const createWindow = () => {
+    console.log('Creating New Window...');
+    const newWindow = new BrowserWindow(
+        {
+            width: 800,
+            height: 800,
+            frame: false
+        });
+    newWindow.loadURL(url.format({
+        pathname: path.join(__dirname, './windows/wallpaper/wallpaperWindow.html'),
+        protocol: 'file',
+        slashes: true,
+    }));
+
+    return newWindow;
+};
+
+const openUpdateWindow = () => {
+    updateWindow = new BrowserWindow({
+        height: 200,
+        width: 400,
+        autoHideMenuBar: true
+    });
+
+    updateWindow.loadURL(url.format({
+        pathname: path.join(__dirname, './windows/update/updateWindow.html'),
+        protocol: 'file',
+        slashes: true
+    }));
+}
+
 app.on('ready', function () {
+    sendNotification('Virtual Wallpaper', 'This is a notification from the Main process.');
+
     mainWindow = new BrowserWindow({
         height: 400,
         width: 400
@@ -58,9 +85,9 @@ app.on('ready', function () {
     }));
 
     updateWindow = new BrowserWindow({
-        height:200,
+        height: 200,
         width: 400,
-        autoHideMenuBar: true 
+        autoHideMenuBar: true
     });
 
     updateWindow.loadURL(url.format({
@@ -82,7 +109,7 @@ app.on('ready', function () {
 
     const mainMenu = Menu.buildFromTemplate(mainMenuTemplate);
     const contextMenu = Menu.buildFromTemplate(contextMenuTemplate);
-    
+
     Menu.setApplicationMenu(mainMenu);
     tray.setContextMenu(contextMenu);
 
@@ -90,6 +117,15 @@ app.on('ready', function () {
     mainWindow.on('minimize', function (event) {
         event.preventDefault();
         mainWindow.hide();
+    });
+
+    autoUpdater.autoDownload = false;
+    autoUpdater.checkForUpdates().then(function(data){
+        log.info('Latest autoUpdater Information...');
+        log.info(data.version);
+        log.info(app.getVersion());
+        log.info('Update is available: ' + (app.getVersion < data.version))
+        let status = data;
     });
 });
 
@@ -143,7 +179,7 @@ autoUpdater.on('checking-for-update', () => {
 })
 
 autoUpdater.on('update-available', (info) => {
-    sendStatusToWindow('Update available.');
+    sendNotification('Virtual Wallpaper', 'An update is available.');
 })
 
 autoUpdater.on('update-not-available', (info) => {
@@ -166,23 +202,6 @@ autoUpdater.on('update-downloaded', (info) => {
     sendStatusToWindow('Restart the Program to apply updates.')
 });
 
-const createWindow = () => {
-    console.log('Creating New Window...');
-    const newWindow = new BrowserWindow(
-        {
-            width: 800,
-            height: 800,
-            frame: false
-        });
-    newWindow.loadURL(url.format({
-        pathname: path.join(__dirname, './windows/wallpaper/wallpaperWindow.html'),
-        protocol: 'file',
-        slashes: true,
-    }));
-
-    return newWindow;
-};
-
 const mainMenuTemplate = [
     {
         label: 'File',
@@ -203,6 +222,13 @@ const mainMenuTemplate = [
         submenu: [
             {
                 label: `Version ${app.getVersion()}`
+            },
+            {
+                label: 'Restart and install update',
+                click() {
+                    autoUpdater.quitAndInstall();
+                },
+                visible: false
             },
             {
                 label: 'Product Documentation',
@@ -254,24 +280,6 @@ if (process.env.NODE_ENV !== 'production') {
         ]
     });
 };
-
-
-//
-// CHOOSE one of the following options for Auto updates
-//
-
-//-------------------------------------------------------------------
-// Auto updates - Option 1 - Simplest version
-//
-// This will immediately download an update, then install when the
-// app quits.
-//-------------------------------------------------------------------
-app.on('ready', function () {
-    sendStatusToWindow('checking for updates...');
-    autoUpdater.checkForUpdatesAndNotify();
-
-});
-
 //-------------------------------------------------------------------
 // Auto updates - Option 2 - More control
 //
