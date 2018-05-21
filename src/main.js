@@ -6,8 +6,8 @@ const url = require('url');
 const Store = require('electron-store');
 const FileManager = require('./services/fileManager');
 
-// process.env.NODE_ENV = 'develop'
-process.env.NODE_ENV = 'production'
+process.env.NODE_ENV = 'develop'
+// process.env.NODE_ENV = 'production'
 
 let store = new Store();
 let fileManager = new FileManager();
@@ -23,16 +23,14 @@ let tray = null;
 let trayIcon = null;
 let mainWindow;
 let updateWindow;
+let updateAvailable = false;
 
-const sendStatusToWindow = (text) => {
-    log.info(text);
-    console.log(text);
-    updateWindow.webContents.send('message', text);
-};
+const sendToast = (text, delay) => {
+    let args = {text, delay};
+    mainWindow.webContents.send('toast', args);
 
-const sendNotification = (title, text) => {
     let notification = new Notification({
-        title: title,
+        title: "Virtual Wallpaper",
         body: text,
     });
 
@@ -71,11 +69,10 @@ const openUpdateWindow = () => {
 }
 
 app.on('ready', function () {
-    sendNotification('Virtual Wallpaper', 'This is a notification from the Main process.');
-
     mainWindow = new BrowserWindow({
         height: 400,
-        width: 400
+        width: 500,
+        show: false
     })
 
     mainWindow.loadURL(url.format({
@@ -84,21 +81,18 @@ app.on('ready', function () {
         slashes: true
     }));
 
-    updateWindow = new BrowserWindow({
-        height: 200,
-        width: 400,
-        autoHideMenuBar: true
-    });
-
-    updateWindow.loadURL(url.format({
-        pathname: path.join(__dirname, './windows/update/updateWindow.html'),
-        protocol: 'file',
-        slashes: true
-    }));
-
     mainWindow.on('closed', function () {
         mainWindow = null;
         app.quit();
+    });
+
+    mainWindow.on('minimize', function (event) {
+        event.preventDefault();
+        mainWindow.hide();
+    });
+
+    mainWindow.once('ready-to-show', () => {
+        mainWindow.show();
     });
 
     if (process.env.NODE_ENV === 'develop') {
@@ -113,24 +107,10 @@ app.on('ready', function () {
     Menu.setApplicationMenu(mainMenu);
     tray.setContextMenu(contextMenu);
 
-
-    mainWindow.on('minimize', function (event) {
-        event.preventDefault();
-        mainWindow.hide();
-    });
-
-    autoUpdater.autoDownload = false;
-    autoUpdater.checkForUpdates().then(function(data){
-        log.info('Latest autoUpdater Information...');
-        log.info(data.version);
-        log.info(app.getVersion());
-        log.info('Update is available: ' + (app.getVersion < data.version))
-        let status = data;
-    });
-});
-
-ipcMain.on('GetVersion', (e, args) => {
-    e.sender.send('setVersion', app.getVersion());
+    if (process.env.NODE_ENV === 'production') {
+        autoUpdater.autoDownload = false;
+        autoUpdater.checkForUpdates().then(function (data) {});
+    };
 });
 
 ipcMain.on('showWindows', function (e, payload) {
@@ -175,31 +155,31 @@ ipcMain.on('getWallpaperWindowimage', (e, args) => {
 })
 
 autoUpdater.on('checking-for-update', () => {
-    sendStatusToWindow('Checking for update...');
+    sendToast('Checking for update...', 10000);
 })
 
 autoUpdater.on('update-available', (info) => {
-    sendNotification('Virtual Wallpaper', 'An update is available.');
+    updateAvailable = true;
+    sendToast('An update is available. Check the About Menu to download!');
 })
 
-autoUpdater.on('update-not-available', (info) => {
-    sendStatusToWindow('Update not available.');
-})
+// autoUpdater.on('update-not-available', (info) => {
+// })
 
 autoUpdater.on('error', (err) => {
-    sendStatusToWindow('Error in auto-updater. ' + err);
+    sendToast('Error in auto-updater. ' + err);
 })
 
 autoUpdater.on('download-progress', (progressObj) => {
     let log_message = "Download speed: " + progressObj.bytesPerSecond;
     log_message = log_message + ' - Downloaded ' + progressObj.percent + '%';
     log_message = log_message + ' (' + progressObj.transferred + "/" + progressObj.total + ')';
-    sendStatusToWindow(log_message);
+    sendToast(log_message);
 })
 
 autoUpdater.on('update-downloaded', (info) => {
-    sendStatusToWindow('Update downloaded');
-    sendStatusToWindow('Restart the Program to apply updates.')
+    sendToast('Update downloaded');
+    sendToast('Restart the Program to apply updates.')
 });
 
 const mainMenuTemplate = [
@@ -221,14 +201,14 @@ const mainMenuTemplate = [
         label: 'About',
         submenu: [
             {
-                label: `Version ${app.getVersion()}`
-            },
-            {
                 label: 'Restart and install update',
                 click() {
                     autoUpdater.quitAndInstall();
                 },
-                visible: false
+                visible: updateAvailable
+            },
+            {
+                label: `Version ${app.getVersion()}`
             },
             {
                 label: 'Product Documentation',

@@ -5,11 +5,15 @@ const { ipcRenderer, app, dialog, remote } = electron;
 let store = new Store();
 
 loadUserPreferences();
-sendNotification('Virtual Wallpaper', 'This is a renderer notification.');
 
 ipcRenderer.on('showPath', (e, args) => {
     document.getElementById('pathLabel').innerHTML = args;
     canEnableSubmit()
+});
+
+ipcRenderer.on('toast', (e, args) => {
+    console.log(args);
+    M.toast({html: `<span>${args.text}</span>`,displayLength: args.delay || 5000 });
 });
 
 document.getElementById('folderPickerButton').onclick = () => {
@@ -46,14 +50,6 @@ if (document.getElementById('pathLabel').innerHTML == '') {
     document.getElementById('submitButton').disabled = true;
 }
 
-ipcRenderer.send('GetVersion');
-
-function sendNotification(title, text) {
-    let notification = new Notification(title, {
-        body: text
-    });    
-}
-
 function loadUserPreferences() {
     let savedCheckbox = document.getElementById('savePreferences')
     if (Object.keys(store.store).length > 0) {
@@ -73,7 +69,7 @@ function loadUserPreferences() {
     }
 };
 
-function canEnableSubmit() {
+const canEnableSubmit = () => {
     let windowsSelect = document.getElementById('windowsSelect');
     let timeSelect = document.getElementById('timeSelect');
     let pathLabel = document.getElementById('pathLabel');
