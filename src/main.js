@@ -5,9 +5,10 @@ const path = require('path');
 const url = require('url');
 const Store = require('electron-store');
 const FileManager = require('./services/fileManager');
+const UpdateStatus = require('./services/updateStatus');
 
-process.env.NODE_ENV = 'develop'
-// process.env.NODE_ENV = 'production'
+// process.env.NODE_ENV = 'develop'
+process.env.NODE_ENV = 'production'
 
 let store = new Store();
 let fileManager = new FileManager();
@@ -23,7 +24,7 @@ let tray = null;
 let trayIcon = null;
 let mainWindow;
 let updateWindow;
-let updateAvailable = false;
+let updateStatus = UpdateStatus.UPDATE_NOT_AVAILABLE;
 
 const sendToast = (text, delay) => {
     let args = {text, delay};
@@ -154,20 +155,21 @@ ipcMain.on('getWallpaperWindowimage', (e, args) => {
     e.sender.send('setWallpaperImage', payload);
 })
 
-autoUpdater.on('checking-for-update', () => {
-    sendToast('Checking for update...', 10000);
-})
+// autoUpdater.on('checking-for-update', () => {
+//     sendToast('Checking for update...', 10000);
+// })
 
 autoUpdater.on('update-available', (info) => {
-    updateAvailable = true;
-    sendToast('An update is available. Check the About Menu to download!');
+    updateStatus = UpdateStatus.UPDATE_AVAILABLE;
+    sendToast('An update is available. Check the About Menu to download!', 30000);
 })
 
 // autoUpdater.on('update-not-available', (info) => {
 // })
 
 autoUpdater.on('error', (err) => {
-    sendToast('Error in auto-updater. ' + err);
+    log.error(err);
+    sendToast('Error occurred during update.');
 })
 
 autoUpdater.on('download-progress', (progressObj) => {
@@ -178,8 +180,7 @@ autoUpdater.on('download-progress', (progressObj) => {
 })
 
 autoUpdater.on('update-downloaded', (info) => {
-    sendToast('Update downloaded');
-    sendToast('Restart the Program to apply updates.')
+    sendToast('Update downloaded. Restart the Program to apply updates.');
 });
 
 const mainMenuTemplate = [
@@ -201,11 +202,18 @@ const mainMenuTemplate = [
         label: 'About',
         submenu: [
             {
-                label: 'Restart and install update',
+                label: 'Download update',
+                click() {
+                    autoUpdater.downloadUpdate();
+                },
+                visible: updateStatus === UpdateStatus.UPDATE_AVAILABLE
+            },
+            {
+                label: 'Restart and Install update.',
                 click() {
                     autoUpdater.quitAndInstall();
                 },
-                visible: updateAvailable
+                visible: updateStatus === UpdateStatus.UPDATE_DOWNLOADED
             },
             {
                 label: `Version ${app.getVersion()}`
