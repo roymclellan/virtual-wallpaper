@@ -1,11 +1,11 @@
-const { app, BrowserWindow, Menu, protocol, ipcMain, dialog, Tray, shell } = require('electron');
+const { app, BrowserWindow, Menu, protocol, ipcMain, dialog, Tray, shell, Notification } = require('electron');
 const log = require('electron-log');
 const { autoUpdater } = require("electron-updater");
 const path = require('path');
 const url = require('url');
-const fs = require('fs');
 const Store = require('electron-store');
 const FileManager = require('./services/fileManager');
+const UpdateStatus = require('./services/updateStatus');
 
 // process.env.NODE_ENV = 'develop'
 process.env.NODE_ENV = 'production'
@@ -17,197 +17,25 @@ autoUpdater.logger = log;
 autoUpdater.logger.transports.file.level = 'info';
 log.info('App starting...');
 
-let windows = [];
 let wallpaperPath = store.get('imageFolderUrl') || '';
 let images = [];
 let timer = 0;
 let tray = null;
 let trayIcon = null;
 let mainWindow;
+let updateWindow;
+let updateStatus = UpdateStatus.UPDATE_NOT_AVAILABLE;
 
-//-------------------------------------------------------------------
-// Define the menu
-//
-// THIS SECTION IS NOT REQUIRED
-//-------------------------------------------------------------------
+const sendToast = (text, delay) => {
+    let args = {text, delay};
+    mainWindow.webContents.send('toast', args);
 
-
-//-------------------------------------------------------------------
-// Open a window that displays the version
-//
-// THIS SECTION IS NOT REQUIRED
-//
-// This isn't required for auto-updates to work, but it's easier
-// for the app to show a window than to have to click "About" to see
-// that updates are working.
-//-------------------------------------------------------------------
-const sendStatusToWindow = (text) => {
-    log.info(text);
-    console.log(text);
-    mainWindow.webContents.send('message', text);
-};
-
-app.on('ready', function () {
-    console.log(fileManager.notifyMe());
-
-    mainWindow = new BrowserWindow({
-        height: 400,
-        width: 400
-    })
-
-    mainWindow.loadURL(url.format({
-        pathname: path.join(__dirname, './windows/main/mainWindow.html'),
-        protocol: 'file',
-        slashes: true
-    }));
-
-    mainWindow.on('closed', function () {
-        mainWindow = null;
-        app.quit();
+    let notification = new Notification({
+        title: "Virtual Wallpaper",
+        body: text,
     });
 
-    if (process.env.NODE_ENV === 'develop') {
-        tray = new Tray('./build/icon.ico');
-    } else {
-        tray = new Tray(path.join(__dirname, 'icon.ico'));
-    }
-    
-    const mainMenu = Menu.buildFromTemplate(mainMenuTemplate);
-    Menu.setApplicationMenu(mainMenu);
-    tray.setContextMenu(contextMenu);
-
-    mainWindow.on('minimize', function (event) {
-        event.preventDefault();
-        mainWindow.hide();
-    });
-});
-
-ipcMain.on('GetVersion', (e, args) => {
-    e.sender.send('setVersion', app.getVersion());
-});
-
-ipcMain.on('showWindows', function (e, payload) {
-    console.log(wallpaperPath);
-    windows = [];
-    timer = payload.time;
-
-    if (payload.savePreferences) {
-        store.set('imageFolderUrl', wallpaperPath);
-        store.set('time', payload.time);
-        store.set('count', payload.count);
-    }
-
-    let x;
-    for (x = 0; x < payload.count; x++) {
-        windows.push(x);
-    }
-
-    for (var i in windows) {
-        windows[i] = createWindow();
-    }
-
-    mainWindow.hide();
-});
-
-ipcMain.on('pushPath', (e, args) => {
-    // TODO: This needs to be combined with the 'getPath' function below in a more elegant manner.
-    getImages(wallpaperPath)
-        .then(function (data) {
-            console.log('Images Received')
-            data.forEach(fileName => {
-                if (fileName.split('.').pop() === 'jpg') {
-                    let image = `${wallpaperPath}\\${fileName}`
-                    images.push(image);
-                }
-            })
-        })
-        .then(function () {
-            e.sender.send('showPath', wallpaperPath);
-        })
-        .catch(function (err) {
-            console.log(err);
-        });
-});
-
-ipcMain.on('getPath', (e, args) => {
-    dialog.showOpenDialog(mainWindow, { properties: ['openDirectory'] }, (filePaths) => {
-        console.log('Received Request.')
-        if (filePaths) {
-            wallpaperPath = filePaths[0];
-            getImages(wallpaperPath)
-                .then(function (data) {
-                    console.log('Images Received')
-                    data.forEach(fileName => {
-                        if (fileName.split('.').pop() === 'jpg') {
-                            let image = `${wallpaperPath}\\${fileName}`
-                            images.push(image);
-                        }
-                    })
-                })
-                .then(function () {
-                    e.sender.send('showPath', wallpaperPath);
-                })
-                .catch(function (err) {
-                    console.log(err);
-                });
-        }else{
-            e.sender.send('showPath', "");
-        }
-    });
-});
-
-ipcMain.on('getWallpaperWindowimage', (e, args) => {
-    let imageIndex = Math.floor(Math.random() * images.length) + 1;
-
-    let payload = {
-        path: images[imageIndex],
-        timer: timer
-    }
-    e.sender.send('setWallpaperImage', payload);
-})
-
-autoUpdater.on('checking-for-update', () => {
-
-    sendStatusToWindow('Checking for update...');
-})
-
-autoUpdater.on('update-available', (info) => {
-    sendStatusToWindow('Update available.');
-})
-
-autoUpdater.on('update-not-available', (info) => {
-    sendStatusToWindow('Update not available.');
-})
-
-autoUpdater.on('error', (err) => {
-    sendStatusToWindow('Error in auto-updater. ' + err);
-})
-
-autoUpdater.on('download-progress', (progressObj) => {
-    let log_message = "Download speed: " + progressObj.bytesPerSecond;
-    log_message = log_message + ' - Downloaded ' + progressObj.percent + '%';
-    log_message = log_message + ' (' + progressObj.transferred + "/" + progressObj.total + ')';
-    sendStatusToWindow(log_message);
-})
-
-autoUpdater.on('update-downloaded', (info) => {
-    sendStatusToWindow('Update downloaded');
-    sendStatusToWindow('Restart the Program to apply updates.')
-});
-
-const getImages = (filePath) => {
-    console.log('Getting Images...');
-    let promise = new Promise(function (resolve, reject) {
-        fs.readdir(filePath, (err, files) => {
-            if (err) {
-                reject(err);
-            } else {
-                resolve(files);
-            }
-        });
-    });
-
-    return promise;
+    notification.show();
 };
 
 const createWindow = () => {
@@ -226,6 +54,134 @@ const createWindow = () => {
 
     return newWindow;
 };
+
+const openUpdateWindow = () => {
+    updateWindow = new BrowserWindow({
+        height: 200,
+        width: 400,
+        autoHideMenuBar: true
+    });
+
+    updateWindow.loadURL(url.format({
+        pathname: path.join(__dirname, './windows/update/updateWindow.html'),
+        protocol: 'file',
+        slashes: true
+    }));
+}
+
+app.on('ready', function () {
+    mainWindow = new BrowserWindow({
+        height: 400,
+        width: 500,
+        show: false
+    })
+
+    mainWindow.loadURL(url.format({
+        pathname: path.join(__dirname, './windows/main/mainWindow.html'),
+        protocol: 'file',
+        slashes: true
+    }));
+
+    mainWindow.on('closed', function () {
+        mainWindow = null;
+        app.quit();
+    });
+
+    mainWindow.on('minimize', function (event) {
+        event.preventDefault();
+        mainWindow.hide();
+    });
+
+    mainWindow.once('ready-to-show', () => {
+        mainWindow.show();
+    });
+
+    if (process.env.NODE_ENV === 'develop') {
+        tray = new Tray('./build/icon.ico');
+    } else {
+        tray = new Tray(path.join(__dirname, 'icon.ico'));
+    }
+
+    const mainMenu = Menu.buildFromTemplate(mainMenuTemplate);
+    const contextMenu = Menu.buildFromTemplate(contextMenuTemplate);
+
+    Menu.setApplicationMenu(mainMenu);
+    tray.setContextMenu(contextMenu);
+
+    if (process.env.NODE_ENV === 'production') {
+        autoUpdater.autoDownload = false;
+        autoUpdater.checkForUpdates().then(function (data) {});
+    };
+});
+
+ipcMain.on('showWindows', function (e, payload) {
+    timer = payload.time;
+
+    if (payload.savePreferences) {
+        store.set('imageFolderUrl', wallpaperPath);
+        store.set('time', payload.time);
+        store.set('count', payload.count);
+    }
+
+    images = fileManager.GetImagesFromPath(wallpaperPath)
+
+    for (x = 0; x < payload.count; x++) {
+        createWindow();
+    }
+
+    mainWindow.hide();
+});
+
+ipcMain.on('SetWallpaperPath', (e, args) => {
+    dialog.showOpenDialog(mainWindow, { properties: ['openDirectory'] }, (filePaths) => {
+        if (filePaths) {
+            wallpaperPath = filePaths[0];
+        } else {
+            wallpaperPath = null;
+        }
+
+        e.sender.send('showPath', wallpaperPath);
+    });
+
+});
+
+ipcMain.on('getWallpaperWindowimage', (e, args) => {
+    let imageIndex = Math.floor(Math.random() * images.length) + 1;
+
+    let payload = {
+        path: images[imageIndex],
+        timer: timer
+    }
+    e.sender.send('setWallpaperImage', payload);
+})
+
+// autoUpdater.on('checking-for-update', () => {
+//     sendToast('Checking for update...', 10000);
+// })
+
+autoUpdater.on('update-available', (info) => {
+    updateStatus = UpdateStatus.UPDATE_AVAILABLE;
+    sendToast('An update is available. Check the About Menu to download!', 30000);
+})
+
+// autoUpdater.on('update-not-available', (info) => {
+// })
+
+autoUpdater.on('error', (err) => {
+    log.error(err);
+    sendToast('Error occurred during update.');
+})
+
+autoUpdater.on('download-progress', (progressObj) => {
+    let log_message = "Download speed: " + progressObj.bytesPerSecond;
+    log_message = log_message + ' - Downloaded ' + progressObj.percent + '%';
+    log_message = log_message + ' (' + progressObj.transferred + "/" + progressObj.total + ')';
+    sendToast(log_message);
+})
+
+autoUpdater.on('update-downloaded', (info) => {
+    sendToast('Update downloaded. Restart the Program to apply updates.');
+});
 
 const mainMenuTemplate = [
     {
@@ -246,11 +202,25 @@ const mainMenuTemplate = [
         label: 'About',
         submenu: [
             {
+                label: 'Download update',
+                click() {
+                    autoUpdater.downloadUpdate();
+                },
+                visible: updateStatus === UpdateStatus.UPDATE_AVAILABLE
+            },
+            {
+                label: 'Restart and Install update.',
+                click() {
+                    autoUpdater.quitAndInstall();
+                },
+                visible: updateStatus === UpdateStatus.UPDATE_DOWNLOADED
+            },
+            {
                 label: `Version ${app.getVersion()}`
             },
             {
                 label: 'Product Documentation',
-                click(){
+                click() {
                     shell.openExternal('https://github.com/roymclellan/virtual-wallpaper/blob/master/README.md')
                 }
             }
@@ -258,7 +228,7 @@ const mainMenuTemplate = [
     }
 ]
 
-const contextMenu = Menu.buildFromTemplate([
+const contextMenuTemplate = [
     {
         label: 'Show App',
         click() {
@@ -271,7 +241,7 @@ const contextMenu = Menu.buildFromTemplate([
             app.quit();
         }
     }
-]);
+];
 
 //if on a mac, add empty object to menu.
 if (process.platform == 'darwin') {
@@ -298,23 +268,6 @@ if (process.env.NODE_ENV !== 'production') {
         ]
     });
 };
-
-//
-// CHOOSE one of the following options for Auto updates
-//
-
-//-------------------------------------------------------------------
-// Auto updates - Option 1 - Simplest version
-//
-// This will immediately download an update, then install when the
-// app quits.
-//-------------------------------------------------------------------
-app.on('ready', function () {
-    sendStatusToWindow('checking for updates...');
-    autoUpdater.checkForUpdatesAndNotify();
-
-});
-
 //-------------------------------------------------------------------
 // Auto updates - Option 2 - More control
 //

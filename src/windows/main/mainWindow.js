@@ -11,22 +11,13 @@ ipcRenderer.on('showPath', (e, args) => {
     canEnableSubmit()
 });
 
-ipcRenderer.on('message', (event, text) => {
-    console.log('Message Recieved: ' + message);
-    var container = document.getElementById('messages');
-    var message = document.createElement('div');
-    message.innerHTML = text;
-    container.appendChild(message);
-});
-
-
-ipcRenderer.on('setVersion', (e, version) => {
-    console.log('Version: ' + version);
-    document.getElementById('versionLabel').innerText = 'Version: ' + version;
+ipcRenderer.on('toast', (e, args) => {
+    console.log(args);
+    M.toast({html: `<span>${args.text}</span>`,displayLength: args.delay || 5000 });
 });
 
 document.getElementById('folderPickerButton').onclick = () => {
-    ipcRenderer.send('getPath');
+    ipcRenderer.send('SetWallpaperPath');
 }
 
 document.getElementById('submitButton').onclick = () => {
@@ -50,6 +41,7 @@ document.getElementById('submitButton').onclick = () => {
 document.getElementById('windowsSelect').onchange = (e) => {
     canEnableSubmit();
 }
+
 document.getElementById('timeSelect').onchange = (e) => {
     canEnableSubmit();
 }
@@ -57,8 +49,6 @@ document.getElementById('timeSelect').onchange = (e) => {
 if (document.getElementById('pathLabel').innerHTML == '') {
     document.getElementById('submitButton').disabled = true;
 }
-
-ipcRenderer.send('GetVersion');
 
 function loadUserPreferences() {
     let savedCheckbox = document.getElementById('savePreferences')
@@ -70,7 +60,6 @@ function loadUserPreferences() {
 
     if (store.has('imageFolderUrl')) {
         document.getElementById('pathLabel').innerText = store.get('imageFolderUrl');
-        ipcRenderer.send('pushPath');
     }
     if (store.has('time')) {
         document.getElementById('timeSelect').value = store.get('time');
@@ -80,7 +69,7 @@ function loadUserPreferences() {
     }
 };
 
-function canEnableSubmit() {
+const canEnableSubmit = () => {
     let windowsSelect = document.getElementById('windowsSelect');
     let timeSelect = document.getElementById('timeSelect');
     let pathLabel = document.getElementById('pathLabel');
