@@ -1,6 +1,6 @@
 {
   "name": "virtual-wallpaper",
-  "version": "0.3.5",
+  "version": "0.3.6",
   "description": "A Virtual Wallpaper to replace the boring desktop wallpapers set by the admin team at Epiq.",
   "main": "src/main.js",
   "scripts": {
@@ -29,7 +29,8 @@
     "nsis": {
       "installerIcon": "build/icon.ico",
       "uninstallerIcon": "build/icon.ico",
-      "license": "LICENSE"
+      "license": "LICENSE",
+      "oneClick": false
     }
   },
   "devDependencies": {
