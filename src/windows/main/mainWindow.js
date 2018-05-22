@@ -84,3 +84,8 @@ const canEnableSubmit = () => {
         document.getElementById('submitButton').disabled = true;
     }
 }
+
+function triggerUpdate() {
+    M.Toast.dismissAll();
+    ipcRenderer.send('doUpdate');
+}

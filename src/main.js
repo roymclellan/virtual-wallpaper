@@ -5,7 +5,6 @@ const path = require('path');
 const url = require('url');
 const Store = require('electron-store');
 const FileManager = require('./services/fileManager');
-const UpdateStatus = require('./services/updateStatus');
 
 // process.env.NODE_ENV = 'develop'
 process.env.NODE_ENV = 'production'
@@ -24,7 +23,6 @@ let tray = null;
 let trayIcon = null;
 let mainWindow;
 let updateWindow;
-let updateStatus = UpdateStatus.UPDATE_NOT_AVAILABLE;
 
 const sendToast = (text, delay) => {
     let args = {text, delay};
@@ -59,7 +57,8 @@ const openUpdateWindow = () => {
     updateWindow = new BrowserWindow({
         height: 200,
         width: 400,
-        autoHideMenuBar: true
+        autoHideMenuBar: true,
+        show: false
     });
 
     updateWindow.loadURL(url.format({
@@ -67,6 +66,12 @@ const openUpdateWindow = () => {
         protocol: 'file',
         slashes: true
     }));
+
+    updateWindow.once('ready-to-show',
+        () => {
+            updateWindow.show();
+            autoUpdater.downloadUpdate();
+        });
 }
 
 app.on('ready', function () {
@@ -155,19 +160,21 @@ ipcMain.on('getWallpaperWindowimage', (e, args) => {
     e.sender.send('setWallpaperImage', payload);
 })
 
-// autoUpdater.on('checking-for-update', () => {
-//     sendToast('Checking for update...', 10000);
-// })
+ipcMain.on('doUpdate',(e, args) => {
+        openUpdateWindow();
+    });
+
+autoUpdater.on('checking-for-update', () => {
+    log.info('Checking for update...');
+ })
 
 autoUpdater.on('update-available', (info) => {
-    updateStatus = UpdateStatus.UPDATE_AVAILABLE;
-    const mainMenu = Menu.buildFromTemplate(mainMenuTemplate);
-    Menu.setApplicationMenu(mainMenu);
-    sendToast('An update is available. Check the About Menu to download!', 30000);
+    sendToast('<span>A new update is available!</span><button onclick=triggerUpdate() class="btn-flat toast-action">Download</button>', 30000);
 })
 
-// autoUpdater.on('update-not-available', (info) => {
-// })
+autoUpdater.on('update-not-available', (info) => {
+    sendToast('No Update Available', 5000);
+})
 
 autoUpdater.on('error', (err) => {
     log.error(err);
@@ -175,13 +182,11 @@ autoUpdater.on('error', (err) => {
 })
 
 autoUpdater.on('download-progress', (progressObj) => {
-    let log_message = "Download speed: " + progressObj.bytesPerSecond;
-    log_message = log_message + ' - Downloaded ' + progressObj.percent + '%';
-    log_message = log_message + ' (' + progressObj.transferred + "/" + progressObj.total + ')';
-    sendToast(log_message);
+    updateWindow.webContents.send('updateProgress', progressObj.percent);
 })
 
 autoUpdater.on('update-downloaded', (info) => {
+    updateWindow.close();
     sendToast('Update downloaded. Restart the Program to apply updates.');
 });
 
@@ -203,20 +208,6 @@ const mainMenuTemplate = [
     {
         label: 'About',
         submenu: [
-            {
-                label: 'Download update',
-                click() {
-                    autoUpdater.downloadUpdate();
-                },
-                visible: updateStatus === UpdateStatus.UPDATE_AVAILABLE
-            },
-            {
-                label: 'Restart and Install update.',
-                click() {
-                    autoUpdater.quitAndInstall();
-                },
-                visible: updateStatus === UpdateStatus.UPDATE_DOWNLOADED
-            },
             {
                 label: `Version ${app.getVersion()}`
             },
