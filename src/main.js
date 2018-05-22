@@ -161,6 +161,8 @@ ipcMain.on('getWallpaperWindowimage', (e, args) => {
 
 autoUpdater.on('update-available', (info) => {
     updateStatus = UpdateStatus.UPDATE_AVAILABLE;
+    const mainMenu = Menu.buildFromTemplate(mainMenuTemplate);
+    Menu.setApplicationMenu(mainMenu);
     sendToast('An update is available. Check the About Menu to download!', 30000);
 })
 
