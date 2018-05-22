@@ -89,3 +89,7 @@ function triggerUpdate() {
     M.Toast.dismissAll();
     ipcRenderer.send('doUpdate');
 }
+
+function forceRestart() {
+    ipcRenderer.send('quitAndRestart');
+}

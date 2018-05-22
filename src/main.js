@@ -162,7 +162,11 @@ ipcMain.on('getWallpaperWindowimage', (e, args) => {
 
 ipcMain.on('doUpdate',(e, args) => {
         openUpdateWindow();
-    });
+});
+
+ipcMain.on('quitAndRestart',(e, args) => {
+    autoUpdater.quitAndInstall();
+});
 
 autoUpdater.on('checking-for-update', () => {
     log.info('Checking for update...');
@@ -187,7 +191,7 @@ autoUpdater.on('download-progress', (progressObj) => {
 
 autoUpdater.on('update-downloaded', (info) => {
     updateWindow.close();
-    sendToast('Update downloaded. Restart the Program to apply updates.');
+    sendToast('<span>Update downloaded. Restart the Program to apply updates.</span><button onclick=forceRestart() class="btn-flat toast-action">Restart</button>');
 });
 
 const mainMenuTemplate = [
