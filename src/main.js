@@ -25,7 +25,7 @@ let mainWindow;
 let updateWindow;
 
 const sendToast = (text, delay) => {
-    let args = {text, delay};
+    let args = { text, delay };
     mainWindow.webContents.send('toast', args);
 
     let notification = new Notification({
@@ -115,7 +115,7 @@ app.on('ready', function () {
 
     if (process.env.NODE_ENV === 'production') {
         autoUpdater.autoDownload = false;
-        autoUpdater.checkForUpdates().then(function (data) {});
+        autoUpdater.checkForUpdates().then(function (data) { });
     };
 });
 
@@ -160,17 +160,18 @@ ipcMain.on('getWallpaperWindowimage', (e, args) => {
     e.sender.send('setWallpaperImage', payload);
 })
 
-ipcMain.on('doUpdate',(e, args) => {
-        openUpdateWindow();
+ipcMain.on('doUpdate', (e, args) => {
+    openUpdateWindow();
 });
 
-ipcMain.on('quitAndRestart',(e, args) => {
+ipcMain.on('quitAndRestart', (e, args) => {
     autoUpdater.quitAndInstall();
 });
 
 autoUpdater.on('checking-for-update', () => {
     log.info('Checking for update...');
- })
+})
+
 
 autoUpdater.on('update-available', (info) => {
     sendToast('<span>A new update is available!</span><button onclick=triggerUpdate() class="btn-flat toast-action">Download</button>', 30000);
@@ -214,6 +215,12 @@ const mainMenuTemplate = [
         submenu: [
             {
                 label: `Version ${app.getVersion()}`
+            },
+            {
+                label: 'Check for update',
+                click() {
+                    autoUpdater.checkForUpdates();
+                }
             },
             {
                 label: 'Product Documentation',

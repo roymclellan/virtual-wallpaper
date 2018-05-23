@@ -1,10 +1,10 @@
 # Product Roadmap
 [Home](../README.md)
-1. Improved update experience.
-    1. Update notification pop-up.
-    1. Choice to update now or later.
-    1. Updating happens in new window
-    1. App automatically re-starts upon completion.
+1. ~~Improved update experience.~~ v0.4.0
+    1. ~~Update notification pop-up.~~ v0.4.0
+    1. ~~Choice to update now or later.~~ replaced with "check for updates" option.
+    1. ~~Updating happens in new window~~  v0.4.0
+    1. ~~App automatically re-starts upon completion.~~ v0.4.0
 1. Ability to launch a single window with a rotating image from the taskbar.
 1. Ability to launch a single window with a static image.
 1. Improved user preferences experience.
