@@ -6,8 +6,8 @@ const url = require('url');
 const Store = require('electron-store');
 const FileManager = require('./services/fileManager');
 
-// process.env.NODE_ENV = 'develop'
-process.env.NODE_ENV = 'production'
+process.env.NODE_ENV = 'develop'
+// process.env.NODE_ENV = 'production'
 
 let store = new Store();
 let fileManager = new FileManager();
@@ -36,19 +36,26 @@ const sendToast = (text, delay) => {
     notification.show();
 };
 
-const createWindow = () => {
-    console.log('Creating New Window...');
+const createWindow = (staticImagePath) => {
+    log.info('Creating New Window...');
     const newWindow = new BrowserWindow(
         {
             width: 800,
             height: 800,
-            frame: false
+            frame: false,
+            show: false
         });
+
     newWindow.loadURL(url.format({
         pathname: path.join(__dirname, './windows/wallpaper/wallpaperWindow.html'),
         protocol: 'file',
         slashes: true,
     }));
+
+    newWindow.once('ready-to-show', () => {
+        newWindow.show();
+        newWindow.webContents.send('Launch', staticImagePath);
+    });
 
     return newWindow;
 };
@@ -76,8 +83,8 @@ const openUpdateWindow = () => {
 
 app.on('ready', function () {
     mainWindow = new BrowserWindow({
-        height: 400,
-        width: 500,
+        height: 450,
+        width: 450,
         show: false
     })
 
@@ -117,6 +124,16 @@ app.on('ready', function () {
         autoUpdater.autoDownload = false;
         autoUpdater.checkForUpdates().then(function (data) { });
     };
+});
+
+ipcMain.on('LauchStaticWallpaper', (e, args) => {
+    dialog.showOpenDialog(mainWindow,{},(filePath) => {
+        if(filePath){
+            createWindow(filePath[0]);
+        }else{
+            log.error('No image selected when trying to launch a static wallpaper');
+        }
+    })
 });
 
 ipcMain.on('showWindows', function (e, payload) {

@@ -16,6 +16,10 @@ ipcRenderer.on('toast', (e, args) => {
     M.toast({html: `<span>${args.text}</span>`,displayLength: args.delay || 5000 });
 });
 
+document.getElementById('staticWallpaperButton').onclick = () => {
+    ipcRenderer.send('LauchStaticWallpaper');
+};
+
 document.getElementById('folderPickerButton').onclick = () => {
     ipcRenderer.send('SetWallpaperPath');
 }

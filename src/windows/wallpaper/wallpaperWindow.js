@@ -5,6 +5,20 @@ const $ = require('jquery');
 let imagePath = '';
 let images = [];
 
+ipcRenderer.on('Launch', (e, args) => {
+    console.log(args);
+    debugger;
+    if (args) {
+        let backgroundDiv = document.getElementById('background');
+
+        $('#background').fadeOut(500, function () {
+            $(this).attr('src', args).fadeIn(500);
+        });
+    } else {
+        getImage();
+    }
+});
+
 ipcRenderer.on('close', (e, args) => {
     window.close();
 });
@@ -15,6 +29,7 @@ ipcRenderer.on('setWallpaperImage', (e, payload) => {
 });
 
 const loadImage = (payload) => {
+    debugger;
     let filePath = formatURL(payload.path);
     let backgroundDiv = document.getElementById('background');
 
@@ -28,10 +43,11 @@ const getImage = () => {
 };
 
 const formatURL = (path) => {
+    debugger;
     let escapedPath = path.split("\\").join("\\\\");
     let fileURL = 'file:///' + escapedPath;
 
     return fileURL;
 }
 
-getImage();
+// getImage();
