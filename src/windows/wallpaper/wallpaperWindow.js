@@ -5,7 +5,6 @@ const $ = require('jquery');
 let imagePath = '';
 let images = [];
 
-
 ipcRenderer.on('close', (e, args) => {
     window.close();
 });

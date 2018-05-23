@@ -17,8 +17,8 @@ autoUpdater.logger.transports.file.level = 'info';
 log.info('App starting...');
 
 let wallpaperPath = store.get('imageFolderUrl') || '';
-let images = [];
-let timer = 0;
+let images = fileManager.GetImagesFromPath(wallpaperPath);
+let timer = store.get('time') || 0;
 let tray = null;
 let trayIcon = null;
 let mainWindow;
@@ -72,7 +72,7 @@ const openUpdateWindow = () => {
             updateWindow.show();
             autoUpdater.downloadUpdate();
         });
-}
+};
 
 app.on('ready', function () {
     mainWindow = new BrowserWindow({
@@ -172,7 +172,6 @@ autoUpdater.on('checking-for-update', () => {
     log.info('Checking for update...');
 })
 
-
 autoUpdater.on('update-available', (info) => {
     sendToast('<span>A new update is available!</span><button onclick=triggerUpdate() class="btn-flat toast-action">Download</button>', 30000);
 })
@@ -197,8 +196,14 @@ autoUpdater.on('update-downloaded', (info) => {
 
 const mainMenuTemplate = [
     {
-        label: 'File',
+        label: 'App',
         submenu: [
+            {
+                label: 'Quick Wallpaper',
+                click() {
+                    createWindow();
+                }
+            },
             {
                 label: 'Quit',
                 accelerator: process.platform == 'darwin'
@@ -240,6 +245,12 @@ const contextMenuTemplate = [
         }
     },
     {
+        label: 'Quick Wallpaper',
+        click() {
+            createWindow();
+        }
+    },
+    {
         label: 'Quit',
         click() {
             app.quit();
@@ -272,30 +283,3 @@ if (process.env.NODE_ENV !== 'production') {
         ]
     });
 };
-//-------------------------------------------------------------------
-// Auto updates - Option 2 - More control
-//
-// For details about these events, see the Wiki:
-// https://github.com/electron-userland/electron-builder/wiki/Auto-Update#events
-//
-// The app doesn't need to listen to any events except `update-downloaded`
-//
-// Uncomment any of the below events to listen for them.  Also,
-// look in the previous section to see them being used.
-//-------------------------------------------------------------------
-// app.on('ready', function()  {
-//   autoUpdater.checkForUpdates();
-// });
-// autoUpdater.on('checking-for-update', () => {
-// })
-// autoUpdater.on('update-available', (info) => {
-// })
-// autoUpdater.on('update-not-available', (info) => {
-// })
-// autoUpdater.on('error', (err) => {
-// })
-// autoUpdater.on('download-progress', (progressObj) => {
-// })
-// autoUpdater.on('update-downloaded', (info) => {
-//   autoUpdater.quitAndInstall();  
-// })
