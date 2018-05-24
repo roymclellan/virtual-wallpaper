@@ -13,8 +13,37 @@ ipcRenderer.on('showPath', (e, args) => {
 
 ipcRenderer.on('toast', (e, args) => {
     console.log(args);
-    M.toast({html: `<span>${args.text}</span>`,displayLength: args.delay || 5000 });
+    M.toast({ html: `<span>${args.text}</span>`, displayLength: args.delay || 5000 });
 });
+
+document.getElementById('savePreferencesButton').onclick = (e) => {
+    let dropdown = document.querySelector('#windowsSelect')
+    let count = dropdown.options[dropdown.selectedIndex].value;
+
+    if(count > 0){
+        store.set('count', count);
+    }else{
+        M.toast({html: "Select a window count."});
+    }
+    
+    let timeSelect = document.getElementById('timeSelect');
+    let time = timeSelect.options[timeSelect.selectedIndex].value;
+
+    if(time > 0){
+        store.set('count', time);
+    }else{
+        M.toast({html: "Select a time."});
+    }
+
+    let pathLabel = document.getElementById('pathLabel');
+    let wallpaperPath = pathLabel.value;
+
+    if (wallpaperPath) {
+        store.set('imageFolderUrl', wallpaperPath);
+    } else {
+        M.toast({html: "Select an images folder."});
+    }
+};
 
 document.getElementById('staticWallpaperButton').onclick = () => {
     ipcRenderer.send('LauchStaticWallpaper');
@@ -56,13 +85,6 @@ if (document.getElementById('pathLabel').value == '') {
 }
 
 function loadUserPreferences() {
-    let savedCheckbox = document.getElementById('savePreferences')
-    if (Object.keys(store.store).length > 0) {
-        savedCheckbox.checked = true;
-    } else {
-        savedCheckbox.checked = false;
-    }
-
     if (store.has('imageFolderUrl')) {
         document.getElementById('pathLabel').value = store.get('imageFolderUrl');
     }
