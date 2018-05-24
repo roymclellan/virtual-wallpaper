@@ -16,7 +16,7 @@
 </head>
 
 <body style="background-color: #eeeeee">
-    <div class="card"  style="background-color: #eeeeee">
+    <div class="card" style="background-color: #eeeeee">
         <div class="card-content">
             <div class="row">
                 <div class="col s6">
@@ -29,12 +29,15 @@
         </div>
     </div>
     <form class="container">
-        <div class="input-field">
-            <p>
-                <strong>Folder Path: </strong>
-                <label for="folderPickerButton" id="pathLabel"></label>
-            </p>
-            <button class="btn waves-effect" id='folderPickerButton'>Choose a folder</button>
+        <p><strong>Preferences</strong></p>
+        <div class="file-field input-field">
+            <div class="btn">
+                <span>Folder</span>
+                <input type="file" id="folderPickerButton">
+            </div>
+            <div class="file-path-wrapper">
+                <input class="file-path validate" id="pathLabel"  placeholder="Select an image folder." type="text">
+            </div>
         </div>
         <label class="dropdown-label">How many wallpapers?</label>
         <select name="windows" id="windowsSelect" class='browser-default'>

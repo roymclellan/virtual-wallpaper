@@ -7,7 +7,7 @@ let store = new Store();
 loadUserPreferences();
 
 ipcRenderer.on('showPath', (e, args) => {
-    document.getElementById('pathLabel').innerHTML = args;
+    document.getElementById('pathLabel').value = args;
     canEnableSubmit()
 });
 
@@ -20,7 +20,8 @@ document.getElementById('staticWallpaperButton').onclick = () => {
     ipcRenderer.send('LauchStaticWallpaper');
 };
 
-document.getElementById('folderPickerButton').onclick = () => {
+document.getElementById('folderPickerButton').onclick = (e) => {
+    e.preventDefault();
     ipcRenderer.send('SetWallpaperPath');
 }
 
@@ -50,7 +51,7 @@ document.getElementById('timeSelect').onchange = (e) => {
     canEnableSubmit();
 }
 
-if (document.getElementById('pathLabel').innerHTML == '') {
+if (document.getElementById('pathLabel').value == '') {
     document.getElementById('submitButton').disabled = true;
 }
 
@@ -63,7 +64,7 @@ function loadUserPreferences() {
     }
 
     if (store.has('imageFolderUrl')) {
-        document.getElementById('pathLabel').innerText = store.get('imageFolderUrl');
+        document.getElementById('pathLabel').value = store.get('imageFolderUrl');
     }
     if (store.has('time')) {
         document.getElementById('timeSelect').value = store.get('time');
@@ -77,14 +78,11 @@ const canEnableSubmit = () => {
     let windowsSelect = document.getElementById('windowsSelect');
     let timeSelect = document.getElementById('timeSelect');
     let pathLabel = document.getElementById('pathLabel');
-    debugger;
     if (windowsSelect.value > 0 &&
         timeSelect.value > 0 &&
-        pathLabel.innerHTML.length > 0) {
-        debugger;
+        pathLabel.value.length > 0) {
         document.getElementById('submitButton').disabled = false;
     } else {
-        debugger;
         document.getElementById('submitButton').disabled = true;
     }
 }

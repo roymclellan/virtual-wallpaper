@@ -51,7 +51,7 @@ const createWindow = (staticImagePath) => {
         protocol: 'file',
         slashes: true,
     }));
-
+    
     newWindow.once('ready-to-show', () => {
         newWindow.show();
         newWindow.webContents.send('Launch', staticImagePath);
