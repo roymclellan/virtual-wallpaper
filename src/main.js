@@ -51,7 +51,7 @@ const createWindow = (staticImagePath) => {
         protocol: 'file',
         slashes: true,
     }));
-    
+
     newWindow.once('ready-to-show', () => {
         newWindow.show();
         newWindow.webContents.send('Launch', staticImagePath);
@@ -83,8 +83,8 @@ const openUpdateWindow = () => {
 
 app.on('ready', function () {
     mainWindow = new BrowserWindow({
-        height: 450,
-        width: 450,
+        height: 500,
+        width: 500,
         show: false
     })
 
@@ -126,11 +126,17 @@ app.on('ready', function () {
     };
 });
 
+ipcMain.on('SavePreferencs', (e, args) => {
+    store.set('imageFolderUrl', wallpaperPath);
+    store.set('time', args.time);
+    store.set('count', args.count);
+});
+
 ipcMain.on('LauchStaticWallpaper', (e, args) => {
-    dialog.showOpenDialog(mainWindow,{},(filePath) => {
-        if(filePath){
+    dialog.showOpenDialog(mainWindow, {}, (filePath) => {
+        if (filePath) {
             createWindow(filePath[0]);
-        }else{
+        } else {
             log.error('No image selected when trying to launch a static wallpaper');
         }
     })
@@ -139,11 +145,11 @@ ipcMain.on('LauchStaticWallpaper', (e, args) => {
 ipcMain.on('showWindows', function (e, payload) {
     timer = payload.time;
 
-    if (payload.savePreferences) {
-        store.set('imageFolderUrl', wallpaperPath);
-        store.set('time', payload.time);
-        store.set('count', payload.count);
-    }
+    // if (payload.savePreferences) {
+    //     store.set('imageFolderUrl', wallpaperPath);
+    //     store.set('time', payload.time);
+    //     store.set('count', payload.count);
+    // }
 
     images = fileManager.GetImagesFromPath(wallpaperPath)
 

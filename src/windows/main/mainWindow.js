@@ -17,11 +17,19 @@ ipcRenderer.on('toast', (e, args) => {
 });
 
 document.getElementById('savePreferencesButton').onclick = (e) => {
+    e.preventDefault();
     let dropdown = document.querySelector('#windowsSelect')
     let count = dropdown.options[dropdown.selectedIndex].value;
 
+    let preferences = {
+        time: '',
+        count: '',
+        wallpaperPath: ''
+    };
+
     if(count > 0){
         store.set('count', count);
+        preferences.count = count;
     }else{
         M.toast({html: "Select a window count."});
     }
@@ -31,6 +39,7 @@ document.getElementById('savePreferencesButton').onclick = (e) => {
 
     if(time > 0){
         store.set('count', time);
+        preferences.time = time;
     }else{
         M.toast({html: "Select a time."});
     }
@@ -39,10 +48,13 @@ document.getElementById('savePreferencesButton').onclick = (e) => {
     let wallpaperPath = pathLabel.value;
 
     if (wallpaperPath) {
+        preferences.wallpaperPath = wallpaperPath;
         store.set('imageFolderUrl', wallpaperPath);
     } else {
         M.toast({html: "Select an images folder."});
     }
+
+    // ipcRenderer.send('SavePreferencs', preferences);
 };
 
 document.getElementById('staticWallpaperButton').onclick = () => {
@@ -61,12 +73,10 @@ document.getElementById('submitButton').onclick = () => {
     let timeSelect = document.getElementById('timeSelect');
     let time = timeSelect.options[timeSelect.selectedIndex].value;
 
-    let savePreferences = document.getElementById('savePreferences').checked;
 
     let payload = {
         count,
         time,
-        savePreferences
     }
 
     ipcRenderer.send('showWindows', payload);
