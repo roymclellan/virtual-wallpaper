@@ -24,18 +24,6 @@ let trayIcon = null;
 let mainWindow;
 let updateWindow;
 
-const sendToast = (text, delay) => {
-    let args = { text, delay };
-    mainWindow.webContents.send('toast', args);
-
-    let notification = new Notification({
-        title: "Virtual Wallpaper",
-        body: text,
-    });
-
-    notification.show();
-};
-
 const createWindow = (staticImagePath) => {
     log.info('Creating New Window...');
     const newWindow = new BrowserWindow(
@@ -79,6 +67,18 @@ const openUpdateWindow = () => {
             updateWindow.show();
             autoUpdater.downloadUpdate();
         });
+};
+
+const sendToast = (text, delay) => {
+    let args = { text, delay };
+    mainWindow.webContents.send('toast', args);
+
+    let notification = new Notification({
+        title: "Virtual Wallpaper",
+        body: text,
+    });
+
+    notification.show();
 };
 
 app.on('ready', function () {
@@ -126,11 +126,19 @@ app.on('ready', function () {
     };
 });
 
-ipcMain.on('SavePreferencs', (e, args) => {
-    store.set('imageFolderUrl', wallpaperPath);
-    store.set('time', args.time);
-    store.set('count', args.count);
+ipcMain.on('doUpdate', (e, args) => {
+    openUpdateWindow();
 });
+
+ipcMain.on('getWallpaperWindowimage', (e, args) => {
+    let imageIndex = Math.floor(Math.random() * images.length) + 1;
+
+    let payload = {
+        path: images[imageIndex],
+        timer: timer
+    }
+    e.sender.send('setWallpaperImage', payload);
+})
 
 ipcMain.on('LauchStaticWallpaper', (e, args) => {
     dialog.showOpenDialog(mainWindow, {}, (filePath) => {
@@ -140,24 +148,6 @@ ipcMain.on('LauchStaticWallpaper', (e, args) => {
             log.error('No image selected when trying to launch a static wallpaper');
         }
     })
-});
-
-ipcMain.on('showWindows', function (e, payload) {
-    timer = payload.time;
-
-    // if (payload.savePreferences) {
-    //     store.set('imageFolderUrl', wallpaperPath);
-    //     store.set('time', payload.time);
-    //     store.set('count', payload.count);
-    // }
-
-    images = fileManager.GetImagesFromPath(wallpaperPath)
-
-    for (x = 0; x < payload.count; x++) {
-        createWindow();
-    }
-
-    mainWindow.hide();
 });
 
 ipcMain.on('SetWallpaperPath', (e, args) => {
@@ -173,18 +163,16 @@ ipcMain.on('SetWallpaperPath', (e, args) => {
 
 });
 
-ipcMain.on('getWallpaperWindowimage', (e, args) => {
-    let imageIndex = Math.floor(Math.random() * images.length) + 1;
+ipcMain.on('showWindows', function (e, payload) {
+    timer = payload.time;
 
-    let payload = {
-        path: images[imageIndex],
-        timer: timer
+    images = fileManager.GetImagesFromPath(wallpaperPath)
+
+    for (x = 0; x < payload.count; x++) {
+        createWindow();
     }
-    e.sender.send('setWallpaperImage', payload);
-})
 
-ipcMain.on('doUpdate', (e, args) => {
-    openUpdateWindow();
+    mainWindow.hide();
 });
 
 ipcMain.on('quitAndRestart', (e, args) => {

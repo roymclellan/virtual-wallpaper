@@ -16,7 +16,7 @@
 </head>
 
 <body style="background-color: #eeeeee">
-    <div class="card" style="background-color: #eeeeee">
+    <div class="card z-depth-3" style="background-color: #eeeeee">
         <div class="card-content">
             <div class="row">
                 <div class="col s6">
@@ -24,6 +24,13 @@
                 </div>
                 <div class="col s6">
                     <button id="submitButton" class="btn  waves-effect">Show Wallpapers</button>
+                    <div class="switch">
+                        <label>
+                            Use Prefs:
+                            <input id="submitPrefsSwitch" type="checkbox">
+                            <span class="lever"></span>
+                        </label>
+                    </div>
                 </div>
             </div>
         </div>
@@ -60,7 +67,7 @@
         </select>
 
         <div class="input-field right">
-            <button class="btn-flat waves-effect">Clear </button>
+            <button id="clearPreferencesButton" class="btn-flat waves-effect">Clear </button>
             <button id="savePreferencesButton" class="btn waves-effect">Save</button>
         </div>
     </form>

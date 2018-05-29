@@ -6,13 +6,15 @@ class FileManager {
     GetImagesFromPath(wallpaperPath) {
         let images = [];
 
-        let fileNameArray = fs.readdirSync(wallpaperPath);
-        fileNameArray.forEach(fileName => {
-            if (fileName.split('.').pop() === 'jpg') {
-                let image = `${wallpaperPath}\\${fileName}`
-                images.push(image);
-            }
-        });
+        if (wallpaperPath) {
+            let fileNameArray = fs.readdirSync(wallpaperPath);
+            fileNameArray.forEach(fileName => {
+                if (fileName.split('.').pop() === 'jpg') {
+                    let image = `${wallpaperPath}\\${fileName}`
+                    images.push(image);
+                }
+            });
+        }
 
         return images;
     }
