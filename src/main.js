@@ -6,8 +6,8 @@ const url = require('url');
 const Store = require('electron-store');
 const FileManager = require('./services/fileManager');
 
-process.env.NODE_ENV = 'develop'
-// process.env.NODE_ENV = 'production'
+// process.env.NODE_ENV = 'develop'
+process.env.NODE_ENV = 'production'
 
 let store = new Store();
 let fileManager = new FileManager();
