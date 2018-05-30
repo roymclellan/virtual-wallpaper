@@ -6,8 +6,8 @@
     1. ~~Updating happens in new window~~  v0.4.0
     1. ~~App automatically re-starts upon completion.~~ v0.4.0
 1. ~~Ability to launch a single window with a rotating image from the taskbar.~~ v0.5.0
-1.~~ Ability to launch a single window with a static image.~~ v0.5.0
-1. Improved user preferences experience.
+1.~~Ability to launch a single window with a static image.~~ v0.5.0
+1. ~~Improved user preferences experience.~~
     1. ~~"Save Preferences" is a button that triggers an action, not a checkbox that works automatically when a window is created.~~ v0.5.0
-    1. Preferences applied by flipping a switch to use saved preferences.
+    1. ~~Preferences applied by flipping a switch to use saved preferences.~~ v.0.5.0
     1. ~~Altering selections after applying preferences will not override preferences unless "Save Preferences" button is clicked.~~ v0.5.0
