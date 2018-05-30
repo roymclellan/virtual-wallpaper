@@ -1,5 +1,6 @@
 const electron = require('electron');
 const { ipcRenderer } = electron;
+const log = require('electron-log');
 const fs = require('fs');
 const $ = require('jquery');
 let imagePath = '';

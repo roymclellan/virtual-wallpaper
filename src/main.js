@@ -40,6 +40,8 @@ const createWindow = (staticImagePath) => {
         slashes: true,
     }));
 
+    // newWindow.toggleDevTools();
+
     newWindow.once('ready-to-show', () => {
         newWindow.show();
         newWindow.webContents.send('Launch', staticImagePath);
@@ -158,6 +160,7 @@ ipcMain.on('SetWallpaperPath', (e, args) => {
             wallpaperPath = null;
         }
 
+        images = fileManager.GetImagesFromPath(wallpaperPath);
         e.sender.send('showPath', wallpaperPath);
     });
 
@@ -258,7 +261,11 @@ const contextMenuTemplate = [
     {
         label: 'Quick Wallpaper',
         click() {
-            createWindow();
+            if(images.length > 0 & store.has('time')){
+                createWindow();
+            }else{
+                sendToast('Preferences must be saved to launch a Quick Wallpaper', 5000);
+            }
         }
     },
     {
