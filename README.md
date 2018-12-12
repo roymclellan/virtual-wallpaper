@@ -5,7 +5,7 @@ A Virtual Wallpaper to replace the boring desktop wallpapers set by the admin te
 
 ### Installation
 
-Installation can be accomplished by visiting the Virtual Wallpaper Releases page (found [here](https://github.com/roymclellan/virtual-wallpaper/releases)) and downloading, then running the latest wallpaper-setup executable file.
+Installation can be accomplished by visiting the Virtual Wallpaper Releases page (found [here](https://github.com/roymclellan/virtual-wallpaper/releases/tag/v0.5.1)) and downloading, then running the latest wallpaper-setup executable file.
 
 ### Updating
 
